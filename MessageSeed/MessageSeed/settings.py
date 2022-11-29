@@ -153,8 +153,10 @@ REST_FRAMEWORK = {
 }
 
 # Settings for Simple JWT
+# => https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html#rotate-refresh-tokens
 SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
-    'ROTATE_REFRESH_TOKENS': True,
+    'ROTATE_REFRESH_TOKENS': True,    # CHECK IF THIS IS BENEFICIAL?
     'USER_ID_FIELD': 'username',
 }
