@@ -56,7 +56,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-# Class used to change password of existing user
+# Method used to change password of existing user
 class ChangePasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
@@ -79,8 +79,55 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         return value
 
     def update(self, instance, validated_data):
+        user = self.context['request'].user
+
+        # Only allowed to change the current users password
+        if user.pk != instance.pk:
+            raise serializers.ValidationError({"authorize": "You dont have permission for this user."})
 
         instance.set_password(validated_data['password'])
+        instance.save()
+
+        return instance
+
+
+# Method used to Update user information
+class UpdateUserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+        }
+
+    # Email and Username are unique fields, hence we need to validate
+    def validate_email(self, value):
+        user = self.context['request'].user
+        if User.objects.exclude(pk=user.pk).filter(email=value).exists():
+            raise serializers.ValidationError({"email": "This email is already in use."})
+        return value
+
+    def validate_username(self, value):
+        user = self.context['request'].user
+        if User.objects.exclude(pk=user.pk).filter(username=value).exists():
+            raise serializers.ValidationError({"username": "This username is already in use."})
+        return value
+
+    def update(self, instance, validated_data):
+        user = self.context['request'].user
+
+        # Logged user must be the same as the user to be updated
+        if user.pk != instance.pk:
+            raise serializers.ValidationError({"authorize": "You dont have permission for this user."})
+
+        instance.first_name = validated_data['first_name']
+        instance.last_name = validated_data['last_name']
+        instance.email = validated_data['email']
+        instance.username = validated_data['username']
+
         instance.save()
 
         return instance

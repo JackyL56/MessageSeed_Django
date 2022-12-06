@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth.models import User
-from .serializers import RegisterSerializer, ChangePasswordSerializer
+from .serializers import RegisterSerializer, ChangePasswordSerializer, UpdateUserSerializer
 from rest_framework import generics
 
 
@@ -27,4 +27,12 @@ class ChangePasswordView(generics.UpdateAPIView):
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = ChangePasswordSerializer
+
+
+# View used for updating User profile
+class UpdateProfileView(generics.UpdateAPIView):
+
+    queryset = User.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UpdateUserSerializer
 
