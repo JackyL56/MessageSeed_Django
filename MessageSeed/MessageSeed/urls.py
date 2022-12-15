@@ -17,7 +17,7 @@ Including another URLconf
 from django.urls import path, include
 from rest_framework import routers
 from django.contrib import admin
-from MessageSeed.DB_Users.views import (
+from apps.database.views import (
     UserViewSet,
     GroupViewSet)
 
@@ -29,6 +29,6 @@ router.register(r'groups', GroupViewSet)
 # Wire up our API using automatic URL routing.
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('auth.urls')),
+    path('authentication/', include('apps.authentication.urls')),
     path('', include(router.urls)),
 ]
