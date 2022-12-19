@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
+from apps.database.models import Author
 
 
 # Subclass to modify and add information to JWT payload
@@ -51,6 +52,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.is_active = True  ## TODO Change this and activate only once the email has been verified?!
         user.set_password(validated_data['password'])
         user.save()
+
+        author = Author.objects.create(
+            username=user,
+        )
+        author.save()
 
         return user
 
