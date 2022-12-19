@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
-
+from decimal import Decimal
 # Create your models here.
 
 
@@ -50,9 +50,25 @@ class Message(models.Model):
     message = models.TextField(
         max_length=500,
         help_text='Contains the message.')
-    postdate = models.DateTimeField(
-        auto_now=True,
+    # post_time = models.DecimalField(
+    #     default=Decimal(datetime.now().timestamp()*1000),  # Epoch Unix Representation of datetime (in ms)
+    #     max_digits=20,
+    #     decimal_places=3,
+    #     verbose_name='Time of Death for the message.'
+    # )
+    # death_time = models.DecimalField(
+    #     default=Decimal((datetime.now()+timedelta(days=7)).timestamp()*1000),   # Default time till death: 7 days after posting
+    #     max_digits=20,
+    #     decimal_places=3,
+    #     verbose_name='Time of Death for the message.'
+    # )
+    post_date = models.DateTimeField(
+        auto_now_add=True,
         verbose_name='The date of the message when it was posted.')
+    death_date = models.DateTimeField(
+        blank=True,
+        verbose_name='Time of Death for the message.'
+    )
     user_likes = models.ManyToManyField(
         User,
         blank=True,
@@ -69,7 +85,7 @@ class Message(models.Model):
 
     # Metadata
     class Meta:
-        ordering = ['-postdate', 'author']
+        ordering = ['post_date', 'author']
         app_label = 'database'
         verbose_name = 'message'
         verbose_name_plural = 'messages'
@@ -79,9 +95,14 @@ class Message(models.Model):
     def like_count(self):
         return self.user_likes.count()
 
-    # @property
-    # def get_coordinates(self):
-    #     return self.latitude, self.longitude
+        # Time of post and death dates in unix epochs (milliseconds)
+    @property
+    def unix_post_date(self):
+        return self.post_date.timestamp()*1000
+
+    @property
+    def unix_death_date(self):
+        return self.death_date.timestamp()*1000
 
     # Methods
     def __str__(self):

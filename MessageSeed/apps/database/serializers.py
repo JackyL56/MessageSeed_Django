@@ -1,6 +1,11 @@
+import datetime
+
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from .models import *
+
+from datetime import timedelta
+from django.utils import timezone
 
 #######################################################################################
 #                                  ADMIN VIEW                                         #
@@ -30,7 +35,7 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['url', 'id', 'title', 'author', 'message', 'postdate', 'user_likes', 'latitude', 'longitude']
+        fields = ['id', 'author', 'latitude', 'longitude']
 
 
 ########################################################################################
@@ -40,7 +45,8 @@ class CreateMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['url', 'id', 'title', 'author', 'message', 'postdate', 'user_likes', 'latitude', 'longitude']
+        fields = ['url', 'id', 'title', 'author', 'message', 'post_date',
+                  'death_date', 'user_likes', 'latitude', 'longitude']
 
     # Methods
     def create(self, validated_data):
@@ -49,12 +55,31 @@ class CreateMessageSerializer(serializers.ModelSerializer):
             author=validated_data['author'],
             message=validated_data['message'],
             latitude=validated_data['latitude'],
-            longitude=validated_data['longitude']
-            # postdate=validated_data['postdate']
+            longitude=validated_data['longitude'],
+            death_date=(timezone.now()+timedelta(days=7))  # TODO Rn, default death date is after a week
         )
         message.save()
 
         return message
+
+
+class GetMessageSerializer(serializers.ModelSerializer):
+    like_count = serializers.IntegerField()
+    unix_post_date = serializers.FloatField()
+    unix_death_date = serializers.FloatField()
+
+    class Meta:
+        model = Message
+        fields = ['id', 'title', 'author', 'message', 'unix_post_date', 'unix_death_date',
+                  'user_likes', 'like_count', 'latitude', 'longitude']
+
+    # def to_representation(self, instance):
+    #     self.fields['post_date'] = instance.post_date.timestamp()*1000
+    #     self.fields['death_date'] = instance.death_date.timestamp()*1000
+    #
+    #     # formatted_death_date = instance.death_date.timestamp()*1000
+    #
+    #     return super().to_representation(instance)
 
 
 class GetLikeCountSerializer(serializers.ModelSerializer):

@@ -13,28 +13,28 @@ class UserViewSet(viewsets.ModelViewSet):
     """ API endpoint that allows users to be viewed or edited. """
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    # permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated,]
 
 
 class GroupViewSet(viewsets.ModelViewSet):
     """ API endpoint that allows groups to be viewed or edited. """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,]
 
 
 class AuthorViewSet(viewsets.ModelViewSet):
     """ API endpoint that allows authors to be viewed or edited. """
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,]
 
 
 class MessageViewSet(viewsets.ModelViewSet):
     """ API endpoint that allows messages to be viewed or edited. """
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,]
 
     # @api_view(['POST'])
     # def post(self, ):
@@ -46,6 +46,16 @@ class CreateMessageView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = CreateMessageSerializer
+
+
+class GetMessageView(generics.ListAPIView):
+    """ API endpoint to get more specific information of a message. """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = GetMessageSerializer
+
+    def get_queryset(self):
+        message = Message.objects.filter(id=self.kwargs.get('pk'))
+        return message
 
 
 class GetLikeCountView(generics.ListAPIView):
