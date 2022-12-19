@@ -17,18 +17,19 @@ Including another URLconf
 from django.urls import path, include
 from rest_framework import routers
 from django.contrib import admin
-from apps.database.views import (
-    UserViewSet,
-    GroupViewSet)
+from apps.database.views import *
 
 # Routers provide an easy way of automatically determining the URL conf.
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'groups', GroupViewSet)
+router.register(r'authors', AuthorViewSet)
+router.register(r'messages', MessageViewSet)
 
 # Wire up our API using automatic URL routing.
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('authentication/', include('apps.authentication.urls')),
+    path('api_auth/', include('apps.api_auth.urls')),
+    path('database/', include('apps.database.urls')),
     path('', include(router.urls)),
 ]
