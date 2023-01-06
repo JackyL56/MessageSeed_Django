@@ -101,3 +101,20 @@ class LikeMessageView(generics.UpdateAPIView):
 
         return Response(status=HTTPStatus.OK)
 
+
+class UnlikeMessageView(generics.UpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    queryset = Message.objects.all()
+    lookup_field = "pk"
+
+    def update(self, request, **kwargs):
+        message = self.get_object()
+        author = request.user.author
+
+        if author in message.user_likes.all():
+            message.user_likes.remove(author)
+            message.save()
+
+        return Response(status=HTTPStatus.OK)
+

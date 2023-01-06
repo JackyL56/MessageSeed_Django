@@ -6,5 +6,6 @@ urlpatterns = [
     path('message/<int:pk>/', GetMessageView.as_view(), name='api_get_message'),
     path('message/<int:pk>/like_count/', GetLikeCountView.as_view(), name='api_get_like_count'),
     path('message/<int:pk>/coordinates/', GetCoordinatesView.as_view(), name='api_get_coordinates'),
-    path('message/<int:pk>/like/', LikeMessageView.as_view(), name='api_like_message')
+    path('message/<int:pk>/like/', LikeMessageView.as_view(), name='api_like_message'),
+    path('message/<int:pk>/unlike/', UnlikeMessageView.as_view(), name='api_unlike_message')
 ]
