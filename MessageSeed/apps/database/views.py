@@ -4,6 +4,9 @@ from rest_framework import viewsets, generics
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from http import HTTPStatus
 
 from apps.database.serializers import *
 from apps.database.models import *
@@ -81,4 +84,20 @@ class GetCoordinatesView(generics.ListAPIView):
         message = Message.objects.filter(id=self.kwargs.get('pk'))
         return message
 
+
+class LikeMessageView(generics.UpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    queryset = Message.objects.all()
+    lookup_field = "pk"
+
+    def update(self, request, **kwargs):
+        message = self.get_object()
+        author = request.user.author
+
+        if author not in message.user_likes.all():
+            message.user_likes.add(author)
+            message.save()
+
+        return Response(status=HTTPStatus.OK)
 

@@ -24,13 +24,17 @@ class Author(models.Model):
         verbose_name = 'author'
         verbose_name_plural = 'authors'
 
+    @property
+    def get_liked_messages_count(self):
+        return self.messages_liked.count()
+
     # Methods
     def get_absolute_url(self):
         """Returns the URL to access a particular instance of MyModelName."""
         return reverse('author-detail-view', args=[str(self.id)])
 
     def __str__(self):
-        return self.username.__str__()
+        return self.username.__str__() + "-" + str(self.get_liked_messages_count)
 
 
 class Message(models.Model):
@@ -70,9 +74,9 @@ class Message(models.Model):
         verbose_name='Time of Death for the message.'
     )
     user_likes = models.ManyToManyField(
-        User,
+        Author,
         blank=True,
-        related_name='user_likes',
+        related_name='messages_liked',
         help_text='List of Users who have liked this message.')
     latitude = models.DecimalField(
         max_digits=18,
@@ -104,6 +108,10 @@ class Message(models.Model):
     def unix_death_date(self):
         return self.death_date.timestamp()*1000
 
+    @property
+    def user_like_list(self):
+        return self.user_likes
+
     # Methods
     def __str__(self):
         return '%s by %s' % (self.title, self.author.__str__())
@@ -111,4 +119,3 @@ class Message(models.Model):
     def get_absolute_url(self):
         """Returns the URL to access a particular instance of MyModelName."""
         return reverse('message-detail-view', args=[str(self.id)])
-

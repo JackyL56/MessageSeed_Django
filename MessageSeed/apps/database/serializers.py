@@ -95,14 +95,3 @@ class GetCoordinatesSerializer(serializers.ModelSerializer):
         model = Message
         fields = ['id', 'latitude', 'longitude']
 
-
-class LikeMessageSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Message
-        fields = ['id', 'author', 'like_count']
-
-    def update(self, instance, validated_data):
-        authors = validated_data.pop('author')
-        instance = super()
-
