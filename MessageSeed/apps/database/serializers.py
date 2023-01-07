@@ -50,9 +50,14 @@ class CreateMessageSerializer(serializers.ModelSerializer):
 
     # Methods
     def create(self, validated_data):
+        author = None
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            author = request.user.author
+
         message = Message.objects.create(
             title=validated_data['title'],
-            author=validated_data['author'],
+            author=author,
             message=validated_data['message'],
             latitude=validated_data['latitude'],
             longitude=validated_data['longitude'],

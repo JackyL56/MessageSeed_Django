@@ -34,7 +34,7 @@ class Author(models.Model):
         return reverse('author-detail-view', args=[str(self.id)])
 
     def __str__(self):
-        return self.username.__str__() + "-" + str(self.get_liked_messages_count)
+        return self.username.__str__()
 
 
 class Message(models.Model):
@@ -47,6 +47,7 @@ class Message(models.Model):
         help_text='Title for the message.')
     author = models.ForeignKey(
         Author,
+        blank=True,
         on_delete=models.CASCADE,
         related_name='messages',
         related_query_name='message',
