@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # Third-Party Apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -166,4 +167,5 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'ROTATE_REFRESH_TOKENS': True,    # CHECK IF THIS IS BENEFICIAL?
     'USER_ID_FIELD': 'username',
+    'BLACKLIST_AFTER_ROTATION': True
 }

@@ -72,10 +72,14 @@ class GetMessageSerializer(serializers.ModelSerializer):
     like_count = serializers.IntegerField()
     unix_post_date = serializers.FloatField()
     unix_death_date = serializers.FloatField()
+    author_name = serializers.SerializerMethodField(read_only=True)
+
+    def get_author_name(self, obj):
+        return obj.author.username.username
 
     class Meta:
         model = Message
-        fields = ['id', 'title', 'author', 'message', 'unix_post_date', 'unix_death_date',
+        fields = ['id', 'title', 'author', 'author_name', 'message', 'unix_post_date', 'unix_death_date',
                   'user_likes', 'like_count', 'latitude', 'longitude']
 
     # def to_representation(self, instance):

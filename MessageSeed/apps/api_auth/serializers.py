@@ -6,19 +6,6 @@ from django.contrib.auth.password_validation import validate_password
 from apps.database.models import Author
 
 
-# Subclass to modify and add information to JWT payload
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-
-    @classmethod
-    def get_token(cls, user):
-        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
-
-        # Add custom claims
-        # token['user_id'] = user.id
-
-        return token
-
-
 # Class used to register new user
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(

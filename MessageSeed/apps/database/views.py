@@ -51,7 +51,7 @@ class CreateMessageView(generics.CreateAPIView):
     serializer_class = CreateMessageSerializer
 
 
-class GetMessageView(generics.ListAPIView):
+class GetMessageView(generics.RetrieveAPIView):
     """ API endpoint to get more specific information of a message. """
     permission_classes = (IsAuthenticated,)
     serializer_class = GetMessageSerializer
@@ -61,7 +61,7 @@ class GetMessageView(generics.ListAPIView):
         return message
 
 
-class GetLikeCountView(generics.ListAPIView):
+class GetLikeCountView(generics.RetrieveAPIView):
     """ API endpoint for liking a messages. """
     permission_classes = (IsAuthenticated,)
     serializer_class = GetLikeCountSerializer
