@@ -43,7 +43,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
 
         author = Author.objects.create(
-            username=user,
+            user=user,
         )
         author.save()
 

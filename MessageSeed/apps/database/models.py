@@ -8,7 +8,7 @@ from decimal import Decimal
 class Author(models.Model):
 
     # Fields
-    username = models.OneToOneField(
+    user = models.OneToOneField(
                 User,
                 on_delete=models.CASCADE,
                 related_name='author',
@@ -16,13 +16,23 @@ class Author(models.Model):
     high_score = models.IntegerField(
                 default=0,
                 help_text='The highest score out of all messages this author has posted.') # TODO Set high score of author automatically
+    level = models.IntegerField(
+                default=0,
+                help_text='Level of the author.')
+    experience = models.IntegerField(
+                default=0,
+                help_text='Current Experience points of the author.')
 
     # Metadata
     class Meta:
-        ordering = ['high_score', 'username']
+        ordering = ['high_score', 'user']
         app_label = 'database'
         verbose_name = 'author'
         verbose_name_plural = 'authors'
+
+    @property
+    def get_username(self):
+        return self.__str__()
 
     @property
     def get_liked_messages_count(self):
@@ -34,7 +44,7 @@ class Author(models.Model):
         return reverse('author-detail-view', args=[str(self.id)])
 
     def __str__(self):
-        return self.username.__str__()
+        return self.user.__str__()
 
 
 class Message(models.Model):

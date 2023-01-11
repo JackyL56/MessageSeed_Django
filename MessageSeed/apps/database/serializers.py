@@ -23,11 +23,11 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class AuthorSerializer(serializers.HyperlinkedModelSerializer):
-    username = serializers.HyperlinkedRelatedField(view_name='author-detail', queryset=Author.objects.all())
+    user = serializers.HyperlinkedRelatedField(view_name='author-detail', queryset=Author.objects.all())
 
     class Meta:
         model = Author
-        fields = ['url', 'username', 'high_score']
+        fields = ['url', 'user', 'high_score']
 
 
 class MessageSerializer(serializers.HyperlinkedModelSerializer):
@@ -75,7 +75,7 @@ class GetMessageSerializer(serializers.ModelSerializer):
     author_name = serializers.SerializerMethodField(read_only=True)
 
     def get_author_name(self, obj):
-        return obj.author.username.username
+        return obj.author.user.username
 
     class Meta:
         model = Message
