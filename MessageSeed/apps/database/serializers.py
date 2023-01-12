@@ -3,7 +3,7 @@ import datetime
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from .models import *
-
+from django.db.models import Sum, Count
 from datetime import timedelta
 from django.utils import timezone
 
@@ -35,17 +35,17 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['id', 'author', 'latitude', 'longitude']
+        fields = ['id', 'author', 'state', 'latitude', 'longitude', 'user_likes']
 
 
 ########################################################################################
 ########################################################################################
 
 class CreateMessageSerializer(serializers.ModelSerializer):
-
+    """ Serializer to create a Message """
     class Meta:
         model = Message
-        fields = ['url', 'id', 'title', 'author', 'message', 'post_date',
+        fields = ['id', 'title', 'author', 'message', 'state', 'post_date',
                   'death_date', 'user_likes', 'latitude', 'longitude']
 
     # Methods
@@ -69,28 +69,57 @@ class CreateMessageSerializer(serializers.ModelSerializer):
 
 
 class GetMessageSerializer(serializers.ModelSerializer):
+    """ Serializer to get a specific Message """
     like_count = serializers.IntegerField()
     unix_post_date = serializers.FloatField()
     unix_death_date = serializers.FloatField()
     author_name = serializers.SerializerMethodField(read_only=True)
+    me_liked = serializers.SerializerMethodField(read_only=True)
 
     def get_author_name(self, obj):
         return obj.author.user.username
 
+    def get_me_liked(self, obj):
+        """ Returns a true if the current user already likes the message."""
+        user = self.context['request'].user.id
+        if obj.user_likes.all().filter(user=user).exists():
+            return True
+        return False
+
+        # if user in obj.user_likes.all():
+        #     return True
+        # else:
+        #     return False
+
     class Meta:
         model = Message
-        fields = ['id', 'title', 'author', 'author_name', 'message', 'unix_post_date', 'unix_death_date',
-                  'user_likes', 'like_count', 'latitude', 'longitude']
-
-    # def to_representation(self, instance):
-    #     self.fields['post_date'] = instance.post_date.timestamp()*1000
-    #     self.fields['death_date'] = instance.death_date.timestamp()*1000
-    #
-    #     # formatted_death_date = instance.death_date.timestamp()*1000
-    #
-    #     return super().to_representation(instance)
+        fields = ['id', 'title', 'author', 'author_name', 'message', 'state', 'unix_post_date', 'unix_death_date',
+                  'user_likes', 'like_count', 'latitude', 'longitude', 'me_liked']
 
 
+class GetAuthorSerializer(serializers.ModelSerializer):
+    """ Serializer to get a specific Author """
+    author_name = serializers.CharField()
+    liked_messages = serializers.SerializerMethodField(read_only=True)
+    likes_received_total = serializers.SerializerMethodField(read_only=True)
+    likes_given_total = serializers.SerializerMethodField(read_only=True)
+
+    def get_liked_messages(self, obj):
+        return obj.messages_liked.values()
+
+    def get_likes_received_total(self, obj):
+        return obj.messages.all().aggregate(Count('user_likes'))['user_likes__count']
+
+    def get_likes_given_total(self, obj):
+        return obj.messages_liked.count()
+
+    class Meta:
+        model = Author
+        fields = ['user_id', 'author_name', 'level', 'experience', 'messages', 'liked_messages', 'likes_received_total',
+                  'likes_given_total']
+
+
+## FIXME May not be needed
 class GetLikeCountSerializer(serializers.ModelSerializer):
     like_count = serializers.IntegerField()
 
@@ -104,3 +133,14 @@ class GetCoordinatesSerializer(serializers.ModelSerializer):
         model = Message
         fields = ['id', 'latitude', 'longitude']
 
+
+class GetMyMessagesSerializer(serializers.ModelSerializer):
+    """ Serializer to get all Messages of the current user. """
+    my_messages = serializers.SerializerMethodField(read_only=True)
+
+    def get_my_messages(self, obj):
+        return obj.messages.values()
+
+    class Meta:
+        model = Author          ## TODO LIST DOES NOT CONTAIN THE PROPERTIES
+        fields = ['user_id', 'my_messages'] # 'messages' for only the id's

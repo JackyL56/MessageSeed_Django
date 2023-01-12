@@ -32,4 +32,6 @@ urlpatterns = [
     path('api_auth/', include('apps.api_auth.urls')),
     path('database/', include('apps.database.urls')),
     path('', include(router.urls)),
+
+    path('ping/', PingView.as_view({'get': 'create'}), name='api_ping')
 ]

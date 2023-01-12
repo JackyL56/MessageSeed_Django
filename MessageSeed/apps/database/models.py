@@ -17,7 +17,7 @@ class Author(models.Model):
                 default=0,
                 help_text='The highest score out of all messages this author has posted.') # TODO Set high score of author automatically
     level = models.IntegerField(
-                default=0,
+                default=1,
                 help_text='Level of the author.')
     experience = models.IntegerField(
                 default=0,
@@ -31,8 +31,12 @@ class Author(models.Model):
         verbose_name_plural = 'authors'
 
     @property
-    def get_username(self):
+    def author_name(self):
         return self.__str__()
+
+    @property
+    def get_liked_messages(self):
+        return self.messages_liked
 
     @property
     def get_liked_messages_count(self):
@@ -48,9 +52,14 @@ class Author(models.Model):
 
 
 class Message(models.Model):
+    STATE = {
+        (0, 'Seedling'),
+        (1, 'Sapling'),
+        (2, 'Tree')
+    }
+
 
     # Fields
-
     title = models.CharField(
         verbose_name='Title',
         max_length=42,
@@ -97,6 +106,10 @@ class Message(models.Model):
         max_digits=18,
         decimal_places=15,
         help_text='Longitude of the location at which this message was posted.')
+    state = models.PositiveSmallIntegerField(
+        default=0,
+        choices=STATE,
+        help_text='State of the message, which will be displayed on the screen.')
 
     # Metadata
     class Meta:
