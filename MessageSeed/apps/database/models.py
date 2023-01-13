@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
 from decimal import Decimal
+from .helper import *
+import math
 # Create your models here.
 
 
@@ -16,9 +18,9 @@ class Author(models.Model):
     high_score = models.IntegerField(
                 default=0,
                 help_text='The highest score out of all messages this author has posted.') # TODO Set high score of author automatically
-    level = models.IntegerField(
-                default=1,
-                help_text='Level of the author.')
+    # level = models.IntegerField(
+    #             default=1,
+    #             help_text='Level of the author.')
     experience = models.IntegerField(
                 default=0,
                 help_text='Current Experience points of the author.')
@@ -33,6 +35,18 @@ class Author(models.Model):
     @property
     def author_name(self):
         return self.__str__()
+
+    @property
+    def level(self):
+        return math.floor(get_level_with_exp(self.experience))
+
+    @property
+    def experience_next(self):
+        return get_exp_with_level(self.level+1)
+
+    @property
+    def experience_previous(self):
+        return get_exp_with_level(self.level)
 
     @property
     def get_liked_messages(self):

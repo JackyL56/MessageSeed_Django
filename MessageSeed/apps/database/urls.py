@@ -11,8 +11,8 @@ urlpatterns = [
 
     path('profile/', ProfileView.as_view(), name='api_my_profile'),
     path('profile/messages/', MyMessagesView.as_view(), name='api_my_messages'),
+    path('profile/liked_messages/', MyLikedMessagesView.as_view(), name='api_my_liked_messages'),
     path('profile/<int:pk>/', GetAuthorView.as_view(), name='api_get_author'),
 
-    # path('ping/', PingView.as_view({'get': 'create'}), name='api_ping')
 
 ]

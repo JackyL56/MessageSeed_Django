@@ -159,6 +159,21 @@ class MyMessagesView(generics.RetrieveAPIView):
         return obj
 
 
+class MyLikedMessagesView(generics.RetrieveAPIView):
+    """ API endpoint to get all messages of the current author. """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = GetMyLikedMessagesSerializer
+
+    def get_queryset(self):
+        author = Author.objects.filter(user_id=self.request.user.author)
+        return author
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, user=self.request.user)
+        return obj
+
+
 class PingView(viewsets.ViewSet):
     """ API endpoint for ping test. """
     permission_classes = (AllowAny,)

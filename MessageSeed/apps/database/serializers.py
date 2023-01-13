@@ -3,7 +3,7 @@ import datetime
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from .models import *
-from django.db.models import Sum, Count
+from django.db.models import Count
 from datetime import timedelta
 from django.utils import timezone
 
@@ -39,14 +39,27 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
 
 
 ########################################################################################
+################################### GLOBALS ############################################
+
+DEFAULT_LIFETIME = 7  # In Days
+
 ########################################################################################
 
 class CreateMessageSerializer(serializers.ModelSerializer):
     """ Serializer to create a Message """
+    unix_post_date = serializers.SerializerMethodField(read_only=True)
+    unix_death_date = serializers.SerializerMethodField(read_only=True) ## FIXME read_only may be false?
+
+    def get_unix_post_date(self, obj):
+        return timezone.now().timestamp() * 1000
+
+    def get_unix_death_date(self, obj):
+        return (timezone.now()+timedelta(days=DEFAULT_LIFETIME)).timestamp() * 1000
+
     class Meta:
         model = Message
-        fields = ['id', 'title', 'author', 'message', 'state', 'post_date',
-                  'death_date', 'user_likes', 'latitude', 'longitude']
+        fields = ['id', 'title', 'author', 'message', 'state', 'unix_post_date',
+                  'unix_death_date', 'user_likes', 'latitude', 'longitude']
 
     # Methods
     def create(self, validated_data):
@@ -61,7 +74,7 @@ class CreateMessageSerializer(serializers.ModelSerializer):
             message=validated_data['message'],
             latitude=validated_data['latitude'],
             longitude=validated_data['longitude'],
-            death_date=(timezone.now()+timedelta(days=7))  # TODO Rn, default death date is after a week
+            death_date=(timezone.now()+timedelta(days=DEFAULT_LIFETIME))  # TODO Rn, default death date is after a week
         )
         message.save()
 
@@ -97,15 +110,30 @@ class GetMessageSerializer(serializers.ModelSerializer):
                   'user_likes', 'like_count', 'latitude', 'longitude', 'me_liked']
 
 
+def get_most_liked_message(obj):
+    """ Helper Function to get the most liked message of an author. """
+    messages = obj.messages.all()
+    most_liked_message = messages.first()
+    count = most_liked_message.user_likes.count()
+    for m in messages:
+        if m.user_likes.count() > count:
+            most_liked_message = m
+            count = most_liked_message.user_likes.count()
+    return most_liked_message
+
+
 class GetAuthorSerializer(serializers.ModelSerializer):
     """ Serializer to get a specific Author """
     author_name = serializers.CharField()
-    liked_messages = serializers.SerializerMethodField(read_only=True)
     likes_received_total = serializers.SerializerMethodField(read_only=True)
     likes_given_total = serializers.SerializerMethodField(read_only=True)
 
-    def get_liked_messages(self, obj):
-        return obj.messages_liked.values()
+    level = serializers.FloatField()
+    experience_next = serializers.FloatField()
+    experience_previous = serializers.FloatField()
+
+    most_liked_message_count = serializers.SerializerMethodField(read_only=True)
+    most_liked_message_id = serializers.SerializerMethodField(read_only=True)
 
     def get_likes_received_total(self, obj):
         return obj.messages.all().aggregate(Count('user_likes'))['user_likes__count']
@@ -113,10 +141,16 @@ class GetAuthorSerializer(serializers.ModelSerializer):
     def get_likes_given_total(self, obj):
         return obj.messages_liked.count()
 
+    def get_most_liked_message_count(self, obj):
+        return get_most_liked_message(obj).user_likes.count()
+
+    def get_most_liked_message_id(self, obj):
+        return get_most_liked_message(obj).id
+
     class Meta:
         model = Author
-        fields = ['user_id', 'author_name', 'level', 'experience', 'messages', 'liked_messages', 'likes_received_total',
-                  'likes_given_total']
+        fields = ['user_id', 'author_name', 'level', 'experience', 'experience_next', 'experience_previous', 'likes_received_total',  # 'messages', 'liked_messages',
+                  'likes_given_total', 'most_liked_message_count', 'most_liked_message_id']
 
 
 ## FIXME May not be needed
@@ -139,8 +173,20 @@ class GetMyMessagesSerializer(serializers.ModelSerializer):
     my_messages = serializers.SerializerMethodField(read_only=True)
 
     def get_my_messages(self, obj):
-        return obj.messages.values()
+        return GetMessageSerializer(obj.messages.all(), many=True, read_only=True, context=self.context).data
 
     class Meta:
-        model = Author          ## TODO LIST DOES NOT CONTAIN THE PROPERTIES
-        fields = ['user_id', 'my_messages'] # 'messages' for only the id's
+        model = Author
+        fields = ['user_id', 'my_messages']
+
+
+class GetMyLikedMessagesSerializer(serializers.ModelSerializer):
+    """ Serializer to get all Messages of the current user. """
+    liked_messages = serializers.SerializerMethodField(read_only=True)
+
+    def get_liked_messages(self, obj):
+        return GetMessageSerializer(obj.messages_liked.all(), many=True, read_only=True, context=self.context).data
+
+    class Meta:
+        model = Author
+        fields = ['user_id', 'liked_messages']
