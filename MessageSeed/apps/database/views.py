@@ -1,8 +1,5 @@
 # Create your views here.
-from django.contrib.auth.models import User, Group
 from rest_framework import viewsets, generics
-from rest_framework.decorators import api_view
-from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
@@ -35,7 +32,7 @@ class AuthorViewSet(viewsets.ModelViewSet):
 
 class MessageViewSet(viewsets.ModelViewSet):
     """ API endpoint that allows messages to be viewed or edited. """
-    queryset = Message.objects.all()
+    queryset = Message.objects.filter(state__lt=Helper.DEAD)
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated, ]
 
@@ -103,9 +100,18 @@ class LikeMessageView(generics.UpdateAPIView):
         message = self.get_object()
         author = request.user.author
 
+        if message.state >= Helper.DEAD:
+            return Response("IT'S ALREADY DEAD!!!!", status=HTTPStatus.FORBIDDEN)
+
+        if request.user.id == message.author_id:
+            return Response("CAN'T LIKE YOUR OWN MESSAGE, NARCISSIST", status=HTTPStatus.FORBIDDEN)
+
         if author not in message.user_likes.all():
             message.user_likes.add(author)
+            message.death_date += timedelta(hours=Helper.ADDED_LIFE_PER_LIKE)
             message.save()
+            author.add_experience(Helper.EXPERIENCE_I_LIKE)
+            message.author.add_experience(Helper.EXPERIENCE_GOT_LIKED)
 
         return Response(status=HTTPStatus.OK)
 
@@ -181,6 +187,3 @@ class PingView(viewsets.ViewSet):
     @staticmethod
     def create(self):
         return Response(status=HTTPStatus.OK)
-
-
-

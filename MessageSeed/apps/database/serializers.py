@@ -41,7 +41,7 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
 ########################################################################################
 ################################### GLOBALS ############################################
 
-DEFAULT_LIFETIME = 7  # In Days
+
 
 ########################################################################################
 
@@ -54,7 +54,7 @@ class CreateMessageSerializer(serializers.ModelSerializer):
         return timezone.now().timestamp() * 1000
 
     def get_unix_death_date(self, obj):
-        return (timezone.now()+timedelta(days=DEFAULT_LIFETIME)).timestamp() * 1000
+        return (timezone.now()+timedelta(days=Helper.DEFAULT_LIFETIME)).timestamp() * 1000
 
     class Meta:
         model = Message
@@ -74,9 +74,11 @@ class CreateMessageSerializer(serializers.ModelSerializer):
             message=validated_data['message'],
             latitude=validated_data['latitude'],
             longitude=validated_data['longitude'],
-            death_date=(timezone.now()+timedelta(days=DEFAULT_LIFETIME))  # TODO Rn, default death date is after a week
+            death_date=(timezone.now()+timedelta(days=Helper.DEFAULT_LIFETIME))
         )
         message.save()
+
+        author.add_experience(Helper.EXPERIENCE_CREATED_MESSAGE)
 
         return message
 

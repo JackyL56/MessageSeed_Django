@@ -1,9 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
-from decimal import Decimal
+from datetime import datetime
 from .helper import *
 import math
+import pytz
 # Create your models here.
 
 
@@ -57,6 +58,10 @@ class Author(models.Model):
         return self.messages_liked.count()
 
     # Methods
+    def add_experience(self, exp):
+        self.experience += exp
+        self.save()
+
     def get_absolute_url(self):
         """Returns the URL to access a particular instance of MyModelName."""
         return reverse('author-detail-view', args=[str(self.id)])
@@ -66,13 +71,6 @@ class Author(models.Model):
 
 
 class Message(models.Model):
-    STATE = {
-        (0, 'Seedling'),
-        (1, 'Sapling'),
-        (2, 'Tree')
-    }
-
-
     # Fields
     title = models.CharField(
         verbose_name='Title',
@@ -122,7 +120,7 @@ class Message(models.Model):
         help_text='Longitude of the location at which this message was posted.')
     state = models.PositiveSmallIntegerField(
         default=0,
-        choices=STATE,
+        choices=Helper.MESSAGE_STATE,
         help_text='State of the message, which will be displayed on the screen.')
 
     # Metadata
@@ -147,6 +145,10 @@ class Message(models.Model):
         return self.death_date.timestamp()*1000
 
     @property
+    def current_lifetime(self):
+        return datetime.now(tz=pytz.UTC) - self.post_date
+
+    @property
     def user_like_list(self):
         return self.user_likes
 
@@ -155,5 +157,10 @@ class Message(models.Model):
         return '%s by %s' % (self.title, self.author.__str__())
 
     def get_absolute_url(self):
-        """Returns the URL to access a particular instance of MyModelName."""
+        """ Returns the URL to access a particular instance of MyModelName. """
         return reverse('message-detail-view', args=[str(self.id)])
+
+    def evolve(self):
+        """ Function used to evolve the message to the next stage. """
+        self.state += 1
+        self.save()
