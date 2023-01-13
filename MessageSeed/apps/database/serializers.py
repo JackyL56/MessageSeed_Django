@@ -144,10 +144,14 @@ class GetAuthorSerializer(serializers.ModelSerializer):
         return obj.messages_liked.count()
 
     def get_most_liked_message_count(self, obj):
-        return get_most_liked_message(obj).user_likes.count()
+        if obj.messages.all().exists():
+            return get_most_liked_message(obj).user_likes.count()
+        return None
 
     def get_most_liked_message_id(self, obj):
-        return get_most_liked_message(obj).id
+        if obj.messages.all().exists():
+            return get_most_liked_message(obj).id
+        return None
 
     class Meta:
         model = Author
