@@ -119,7 +119,7 @@ class Message(models.Model):
         decimal_places=15,
         help_text='Longitude of the location at which this message was posted.')
     state = models.PositiveSmallIntegerField(
-        default=0,
+        default=Helper.SEEDLING,
         choices=Helper.MESSAGE_STATE,
         help_text='State of the message, which will be displayed on the screen.')
 
