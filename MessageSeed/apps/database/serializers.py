@@ -31,11 +31,15 @@ class AuthorSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class MessageSerializer(serializers.HyperlinkedModelSerializer):
-    # author = serializers.HyperlinkedRelatedField(view_name='message-detail', queryset=Message.objects.all())
+    author_name = serializers.SerializerMethodField(read_only=True)
+    like_count = serializers.IntegerField()
 
+    def get_author_name(self, obj):
+        return obj.author.user.username
+    
     class Meta:
         model = Message
-        fields = ['id', 'author', 'state', 'latitude', 'longitude', 'user_likes']
+        fields = ['id', 'author_name', 'state', 'latitude', 'longitude', 'like_count']
 
 
 ########################################################################################
