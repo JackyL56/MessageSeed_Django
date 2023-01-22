@@ -39,7 +39,7 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
     
     class Meta:
         model = Message
-        fields = ['id', 'author_name', 'state', 'latitude', 'longitude', 'like_count']
+        fields = ['id', 'title', 'author_name', 'state', 'latitude', 'longitude', 'like_count']
 
 
 ########################################################################################
