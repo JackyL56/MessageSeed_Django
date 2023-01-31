@@ -2,7 +2,7 @@
 
 Real world interactive systems class, from Keio University, Fall 2022.
 
-This repository is the server-side of [MessageSeed](https://github.com/jamailun/MessageSeed/). See this repository to learn more.
+This repository is the server-side of [MessageSeed](https://github.com/jamailun/MessageSeed/).
 
 ## Authors
 
